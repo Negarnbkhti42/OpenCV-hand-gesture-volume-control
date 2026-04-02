@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+import mediapipe as mp
 
 cap = cv2.VideoCapture(0)
 pastTime = 0
@@ -14,7 +15,7 @@ while True:
     fps = 1 / (currentTime - pastTime)
     pastTime = currentTime
     cv2.putText(
-        img, f"FPS: {int(fps)}", (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (21, 171, 91), 1
+        img, f"FPS: {int(fps)}", (10, 30), cv2.FONT_HERSHEY_PLAIN, 1, (21, 171, 91), 2
     )
 
     cv2.imshow("Img", img)
