@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import time
 import mediapipe as mp
+from HandDetector import HandDetector
 
 cap = cv2.VideoCapture(0)
 pastTime = 0
