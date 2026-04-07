@@ -7,10 +7,16 @@ from HandDetector import HandDetector
 cap = cv2.VideoCapture(0)
 pastTime = 0
 
+detector = HandDetector()
+
 while True:
     success, img = cap.read()
     img = cv2.flip(img, 1)
     img = cv2.resize(img, (640, 480))
+
+    detector.detect_hands(img)
+    print(detector.result)
+    img = detector.draw_landmarks_on_image(img, detector.result)
 
     currentTime = time.time()
     fps = 1 / (currentTime - pastTime)
