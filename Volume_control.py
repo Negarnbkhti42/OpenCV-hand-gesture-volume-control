@@ -6,6 +6,13 @@ import mediapipe as mp
 from HandDetector import HandDetector
 
 
+def get_point_position(img, point):
+    height, width, _ = img.shape
+    x = int(point.x * width)
+    y = int(point.y * height)
+    return x, y
+
+
 def detect_pointer_and_thumb(hand_landmarks):
     if len(hand_landmarks) == 0:
         return None, None
@@ -22,17 +29,11 @@ def calculate_distance(point1, point2):
     return distance
 
 
-def highlight_pointer_and_thumb(img, hand_landmarks):
-    index, thumb = detect_pointer_and_thumb(hand_landmarks)
-    if index is not None and thumb is not None:
-        height, width, _ = img.shape
-        index_x, index_y = int(index.x * width), int(index.y * height)
-        thumb_x, thumb_y = int(thumb.x * width), int(thumb.y * height)
-
-        # Draw circles on the index finger tip and thumb tip
-        cv2.circle(img, (index_x, index_y), 15, (195, 18, 142), cv2.FILLED)
-        cv2.circle(img, (thumb_x, thumb_y), 15, (195, 18, 142), cv2.FILLED)
-        cv2.line(img, (index_x, index_y), (thumb_x, thumb_y), (195, 18, 142), 3)
+def highlight_pointer_and_thumb(img, index, thumb):
+    # Draw circles on the index finger tip and thumb tip
+    cv2.circle(img, (index.x, index.y), 15, (195, 18, 142), cv2.FILLED)
+    cv2.circle(img, (thumb.x, thumb.y), 15, (195, 18, 142), cv2.FILLED)
+    cv2.line(img, (index.x, index.y), (thumb.x, thumb.y), (195, 18, 142), 3)
 
 
 def calculate_volume_level(distance, min_distance=0.02, max_distance=0.2):
@@ -43,6 +44,12 @@ def calculate_volume_level(distance, min_distance=0.02, max_distance=0.2):
         return 1.0
     else:
         return (distance - min_distance) / (max_distance - min_distance)
+
+
+def set_system_volume(volume_level):
+    # This function is a placeholder. You would need to implement platform-specific code to set the system volume.
+    # For example, on Windows, you could use the pycaw library to control the volume.
+    pass
 
 
 def main():
@@ -59,7 +66,12 @@ def main():
 
         detector.detect_hands(img)
         img = detector.draw_landmarks_on_image(img, detector.result)
-        highlight_pointer_and_thumb(img, detector.result.hand_landmarks)
+        index_finger_tip, thumb_tip = detect_pointer_and_thumb(
+            detector.result.hand_landmarks
+        )
+        index_finger_tip = get_point_position(img, index_finger_tip)
+        thumb_tip = get_point_position(img, thumb_tip)
+        highlight_pointer_and_thumb(img, index_finger_tip, thumb_tip)
 
         current_time = time.time()
         fps = 1 / (current_time - past_time)
