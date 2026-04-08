@@ -43,6 +43,31 @@ def set_system_volume(volume_level):
     volume.SetMasterVolumeLevel(volume_level, None)
 
 
+def draw_volume_bar(img, volume_level, volume_range):
+    # Map the volume level to a percentage
+    volume_percentage = np.interp(
+        volume_level, [volume_range[0], volume_range[1]], [0, 100]
+    )
+    # Draw a volume bar on the image
+    cv2.rectangle(img, (50, 400), (150, 450), (255, 255, 255), cv2.FILLED)
+    cv2.rectangle(
+        img,
+        (50, 400),
+        (50 + int(volume_percentage), 450),
+        (21, 171, 91),
+        cv2.FILLED,
+    )
+    cv2.putText(
+        img,
+        f"Volume: {int(volume_percentage)}%",
+        (50, 390),
+        cv2.FONT_HERSHEY_PLAIN,
+        1,
+        (21, 171, 91),
+        2,
+    )
+
+
 def main():
 
     cap = cv2.VideoCapture(0)
@@ -52,12 +77,12 @@ def main():
 
     device = AudioUtilities.GetSpeakers()
     volume = device.EndpointVolume
+    volume_range = volume.GetVolumeRange()
+    volume_level = volume.GetMasterVolumeLevel()
     print(f"Audio output: {device.FriendlyName}")
     print(f"- Muted: {bool(volume.GetMute())}")
-    print(f"- Volume level: {volume.GetMasterVolumeLevel()} dB")
-    print(
-        f"- Volume range: {volume.GetVolumeRange()[0]} dB - {volume.GetVolumeRange()[1]} dB"
-    )
+    print(f"- Volume level: {volume_level} dB")
+    print(f"- Volume range: {volume_range[0]} dB - {volume_range[1]} dB")
 
     while True:
         _, img = cap.read()
@@ -83,10 +108,12 @@ def main():
             volume_level = np.interp(
                 distance,
                 [50, 250],
-                [volume.GetVolumeRange()[0], volume.GetVolumeRange()[1]],
+                [volume_range[0], volume_range[1]],
             )  # Map distance to volume level
             print(f"Distance: {distance:.2f}, Volume level: {volume_level:.2f} dB")
             set_system_volume(volume_level)
+
+        draw_volume_bar(img, volume_level, volume_range)
 
         current_time = time.time()
         fps = 1 / (current_time - past_time)
